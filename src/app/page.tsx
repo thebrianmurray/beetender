@@ -1,65 +1,97 @@
-import Image from "next/image";
+import { createClient } from '@/lib/supabase/server'
+import { AppShell } from '@/components/layout/AppShell'
+import Link from 'next/link'
+import { ClipboardPen, Table2, BarChart3, Settings2, ArrowRight } from 'lucide-react'
 
-export default function Home() {
+const MODULES = [
+  {
+    href: '/enter',
+    icon: ClipboardPen,
+    label: 'Enter Data',
+    description: 'Record a new pollinator observation with full field data and optional photo.',
+    colour: 'from-amber-400 to-yellow-300',
+    bg: 'bg-amber-50 hover:bg-amber-100',
+    border: 'border-amber-200',
+    text: 'text-amber-900',
+  },
+  {
+    href: '/view',
+    icon: Table2,
+    label: 'View Data',
+    description: 'Browse, search, edit and update all survey records. Add images to existing entries.',
+    colour: 'from-green-400 to-emerald-300',
+    bg: 'bg-emerald-50 hover:bg-emerald-100',
+    border: 'border-emerald-200',
+    text: 'text-emerald-900',
+  },
+  {
+    href: '/analyse',
+    icon: BarChart3,
+    label: 'Analyse Data',
+    description: 'Export to CSV or Excel. Generate Word and PDF reports from your survey data.',
+    colour: 'from-blue-400 to-cyan-300',
+    bg: 'bg-blue-50 hover:bg-blue-100',
+    border: 'border-blue-200',
+    text: 'text-blue-900',
+  },
+  {
+    href: '/settings',
+    icon: Settings2,
+    label: 'Settings',
+    description: 'Manage default values, dropdown options, site IDs and surveyor profiles.',
+    colour: 'from-violet-400 to-purple-300',
+    bg: 'bg-violet-50 hover:bg-violet-100',
+    border: 'border-violet-200',
+    text: 'text-violet-900',
+  },
+]
+
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Quick stats
+  const { count } = await supabase
+    .from('surveys')
+    .select('*', { count: 'exact', head: true })
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <AppShell userEmail={user?.email}>
+      <div className="flex flex-col gap-8">
+        {/* Hero */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold text-amber-900 tracking-tight">
+            Welcome back{user?.user_metadata?.name ? `, ${user.user_metadata.name.split(' ')[0]}` : ''}
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-gray-500">
+            {count !== null && count !== undefined
+              ? `${count.toLocaleString()} observation${count !== 1 ? 's' : ''} recorded`
+              : 'Pollinator survey data management'}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Module cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {MODULES.map(({ href, icon: Icon, label, description, bg, border, text }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`group relative flex flex-col gap-3 rounded-2xl border ${border} ${bg} p-6 transition-all duration-200 hover:shadow-md`}
+            >
+              <div className="flex items-start justify-between">
+                <div className={`rounded-xl p-2.5 ${text} bg-white/60`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <ArrowRight className={`w-4 h-4 ${text} opacity-0 group-hover:opacity-100 transition-opacity`} />
+              </div>
+              <div>
+                <h2 className={`font-semibold text-lg ${text}`}>{label}</h2>
+                <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">{description}</p>
+              </div>
+            </Link>
+          ))}
         </div>
-      </main>
-    </div>
-  );
+      </div>
+    </AppShell>
+  )
 }
