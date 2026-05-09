@@ -13,7 +13,8 @@ export function deriveBowlColour(station: string, method: SurveyMethod): BowlCol
 export function deriveMonth(dateStr: string): string {
   if (!dateStr) return ''
   try {
-    const parsed = parse(dateStr, 'dd/MM/yyyy', new Date())
+    // date input returns ISO format yyyy-MM-dd
+    const parsed = parse(dateStr, 'yyyy-MM-dd', new Date())
     return format(parsed, 'MMMM')
   } catch {
     return ''

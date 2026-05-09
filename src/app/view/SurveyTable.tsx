@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Survey } from '@/types/survey'
 import { createClient } from '@/lib/supabase/client'
 import { isoToDisplay } from '@/lib/survey-utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -16,17 +15,8 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { Search, Pencil, Trash2, ImageIcon, Plus } from 'lucide-react'
-import Link from 'next/link'
-
-const POLLINATOR_COLOURS: Record<string, string> = {
-  Hoverfly: 'bg-orange-100 text-orange-800',
-  Bumblebee: 'bg-yellow-100 text-yellow-800',
-  'Solitary Bee': 'bg-amber-100 text-amber-800',
-  Butterfly: 'bg-pink-100 text-pink-800',
-}
 
 export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) {
-  const router = useRouter()
   const [surveys, setSurveys] = useState(initialSurveys)
   const [search, setSearch] = useState('')
   const [imageDialog, setImageDialog] = useState<Survey | null>(null)
@@ -59,7 +49,6 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Toolbar */}
       <div className="flex gap-3 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -71,62 +60,61 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
           />
         </div>
         <Link href="/enter">
-          <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+          <Button className="bg-gray-900 hover:bg-gray-700 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white">
             <Plus className="w-4 h-4 mr-1.5" /> Add
           </Button>
         </Link>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-amber-100 overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-amber-50 text-amber-900 text-xs font-semibold uppercase tracking-wide">
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Site</th>
-                <th className="px-4 py-3 text-left">Method</th>
-                <th className="px-4 py-3 text-left">Group</th>
-                <th className="px-4 py-3 text-left">Species</th>
-                <th className="px-4 py-3 text-left">ID Code</th>
-                <th className="px-4 py-3 text-left">Surveyor</th>
-                <th className="px-4 py-3 text-left w-24">Actions</th>
+              <tr className="border-b border-gray-200 dark:border-zinc-800">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Site</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Method</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Group</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Species</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">ID Code</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Surveyor</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500 w-24">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100 dark:divide-zinc-800/50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
                     {search ? 'No records match your search' : 'No observations recorded yet'}
                   </td>
                 </tr>
               ) : (
-                filtered.map((survey, idx) => (
+                filtered.map((survey) => (
                   <tr
                     key={survey.id}
-                    className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
+                    className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-zinc-400 text-xs">
                       {isoToDisplay(survey.date)}
                     </td>
-                    <td className="px-4 py-3 font-mono text-gray-800">{survey.site_id}</td>
-                    <td className="px-4 py-3 text-gray-600">{survey.survey_method}</td>
+                    <td className="px-4 py-3 font-mono text-gray-800 dark:text-gray-200 text-xs">{survey.site_id}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-zinc-400 text-xs">{survey.survey_method}</td>
                     <td className="px-4 py-3">
-                      <Badge className={POLLINATOR_COLOURS[survey.pollinator_group] ?? ''}>
+                      <span className="text-xs font-medium text-gray-700 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
                         {survey.pollinator_group}
-                      </Badge>
+                      </span>
                     </td>
-                    <td className="px-4 py-3 italic text-gray-700">
+                    <td className="px-4 py-3 italic text-gray-800 dark:text-gray-200 text-xs">
                       {survey.species_name || `${survey.genus} ${survey.species}`.trim() || '—'}
                     </td>
-                    <td className="px-4 py-3 font-mono text-gray-600">{survey.id_code || '—'}</td>
-                    <td className="px-4 py-3 text-gray-600">{survey.surveyor_initials}</td>
+                    <td className="px-4 py-3 font-mono text-gray-500 dark:text-zinc-400 text-xs">{survey.id_code || '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-zinc-400 text-xs">{survey.surveyor_initials}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5">
                         {survey.image_url && (
                           <button
                             onClick={() => setImageDialog(survey)}
-                            className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
                             title="View image"
                           >
                             <ImageIcon className="w-3.5 h-3.5" />
@@ -134,7 +122,7 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
                         )}
                         <Link href={`/view/${survey.id}/edit`}>
                           <button
-                            className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-50 transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
                             title="Edit"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -142,7 +130,7 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
                         </Link>
                         <button
                           onClick={() => setDeleteId(survey.id)}
-                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 transition-colors"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -157,7 +145,6 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
         </div>
       </div>
 
-      {/* Image dialog */}
       <Dialog open={!!imageDialog} onOpenChange={() => setImageDialog(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -170,23 +157,22 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
               className="w-full rounded-xl object-contain max-h-[60vh]"
             />
           )}
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-zinc-400">
             {isoToDisplay(imageDialog?.date ?? '')} · {imageDialog?.site_id} · {imageDialog?.surveyor_initials}
           </p>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm dialog */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete this record?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500">This cannot be undone.</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">This cannot be undone.</p>
           <div className="flex gap-3 justify-end mt-2">
             <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
             <Button
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="bg-gray-900 hover:bg-gray-700 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white"
               onClick={() => deleteId && handleDelete(deleteId)}
             >
               Delete

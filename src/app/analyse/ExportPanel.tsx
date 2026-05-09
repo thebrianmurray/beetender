@@ -68,12 +68,8 @@ export function ExportPanel({ surveys }: { surveys: Survey[] }) {
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Surveys')
-    // Auto-fit columns
     const colWidths = COLUMNS.map((c) => ({
-      wch: Math.max(
-        c.label.length,
-        ...rows.map((r) => (r[c.label] ?? '').length)
-      ) + 2,
+      wch: Math.max(c.label.length, ...rows.map((r) => (r[c.label] ?? '').length)) + 2,
     }))
     ws['!cols'] = colWidths
     XLSX.writeFile(wb, `bee-tender-${new Date().toISOString().slice(0, 10)}.xlsx`)
@@ -135,7 +131,6 @@ export function ExportPanel({ surveys }: { surveys: Survey[] }) {
       label: 'CSV',
       description: 'Plain comma-separated values. Opens in any spreadsheet app.',
       icon: FileSpreadsheet,
-      colour: 'border-green-200 bg-green-50',
       action: exportCSV,
     },
     {
@@ -143,7 +138,6 @@ export function ExportPanel({ surveys }: { surveys: Survey[] }) {
       label: 'Excel',
       description: 'Formatted .xlsx workbook with auto-fitted columns.',
       icon: FileSpreadsheet,
-      colour: 'border-emerald-200 bg-emerald-50',
       action: exportExcel,
     },
     {
@@ -151,7 +145,6 @@ export function ExportPanel({ surveys }: { surveys: Survey[] }) {
       label: 'Word Report',
       description: 'Formatted .docx report with survey summary table.',
       icon: FileText,
-      colour: 'border-blue-200 bg-blue-50',
       action: exportWord,
     },
     {
@@ -159,28 +152,29 @@ export function ExportPanel({ surveys }: { surveys: Survey[] }) {
       label: 'PDF Report',
       description: 'Printable PDF report with survey summary table.',
       icon: FileText,
-      colour: 'border-violet-200 bg-violet-50',
       action: exportPDF,
     },
   ]
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-amber-50 border border-amber-100 rounded-2xl px-5 py-3 text-sm text-amber-800">
-        <strong>{surveys.length}</strong> records will be included in all exports.
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl px-5 py-3 text-sm text-gray-600 dark:text-zinc-400">
+        <strong className="text-gray-900 dark:text-gray-100">{surveys.length}</strong> records will be included in all exports.
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {EXPORTS.map(({ key, label, description, icon: Icon, colour, action }) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {EXPORTS.map(({ key, label, description, icon: Icon, action }) => (
           <div
             key={key}
-            className={`rounded-2xl border ${colour} p-5 flex flex-col gap-3`}
+            className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 flex flex-col gap-3"
           >
             <div className="flex items-start gap-3">
-              <Icon className="w-5 h-5 mt-0.5 text-gray-500 shrink-0" />
+              <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-2 shrink-0">
+                <Icon className="w-4 h-4 text-gray-600 dark:text-zinc-400" />
+              </div>
               <div>
-                <p className="font-semibold text-gray-800">{label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{label}</p>
+                <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">{description}</p>
               </div>
             </div>
             <Button

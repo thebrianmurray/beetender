@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { deriveBowlColour, deriveMonth, deriveSpeciesName, displayToIso } from '@/lib/survey-utils'
@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Camera, Upload, X, Loader2 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 
 const EMPTY_FORM = {
   site_id: '',
@@ -44,12 +43,29 @@ function FormField({ label, required, children, hint }: {
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
         {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
+        {required && <span className="text-gray-400 ml-0.5">*</span>}
       </Label>
       {children}
-      {hint && <p className="text-xs text-gray-400">{hint}</p>}
+      {hint && <p className="text-xs text-gray-400 dark:text-zinc-500">{hint}</p>}
+    </div>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 flex flex-col gap-4">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500">{title}</h3>
+      {children}
+    </div>
+  )
+}
+
+function DerivedField({ value, placeholder }: { value: string; placeholder: string }) {
+  return (
+    <div className="flex items-center h-10 px-3 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-600 dark:text-zinc-300">
+      {value || <span className="text-gray-300 dark:text-zinc-600">{placeholder}</span>}
     </div>
   )
 }
@@ -62,7 +78,6 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url ?? null)
   const [saving, setSaving] = useState(false)
 
-  // Derived fields
   const month = deriveMonth(form.date)
   const bowlColour = deriveBowlColour(form.station_transect_section, form.survey_method as SurveyMethod)
   const speciesName = deriveSpeciesName(form.genus, form.species, form.modifier as Modifier)
@@ -96,7 +111,6 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
 
     let image_url: string | null = initialData?.image_url ?? null
 
-    // Upload image if selected
     if (imageFile) {
       const ext = imageFile.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -161,17 +175,14 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {/* Section: Site */}
-      <div className="bg-white rounded-2xl border border-amber-100 p-5 flex flex-col gap-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700">Site & Survey</h3>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Section title="Site & Survey">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Site ID" required>
             <Input
               value={form.site_id}
               onChange={(e) => set('site_id', e.target.value)}
               placeholder="e.g. SITE01"
-              className="uppercase"
             />
           </FormField>
           <FormField label="Surveyor Initials" required>
@@ -184,7 +195,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Date" required hint="dd/mm/yyyy">
+          <FormField label="Date" required>
             <Input
               type="date"
               value={form.date}
@@ -192,9 +203,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
             />
           </FormField>
           <FormField label="Month">
-            <div className="flex items-center h-10 px-3 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-500">
-              {month || <span className="text-gray-300">Auto-filled</span>}
-            </div>
+            <DerivedField value={month} placeholder="Auto-filled" />
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -222,28 +231,12 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
         </div>
         {form.survey_method === 'Pan Trap' && (
           <FormField label="Bowl Colour">
-            <div className="flex items-center h-10 px-3 rounded-lg border border-gray-200 bg-gray-50 text-sm">
-              {bowlColour ? (
-                <Badge
-                  className={
-                    bowlColour === 'Yellow' ? 'bg-yellow-100 text-yellow-800' :
-                    bowlColour === 'White' ? 'bg-gray-100 text-gray-700' :
-                    'bg-blue-100 text-blue-800'
-                  }
-                >
-                  {bowlColour}
-                </Badge>
-              ) : (
-                <span className="text-gray-300">Derived from station</span>
-              )}
-            </div>
+            <DerivedField value={bowlColour} placeholder="Derived from station" />
           </FormField>
         )}
-      </div>
+      </Section>
 
-      {/* Section: Organism */}
-      <div className="bg-white rounded-2xl border border-amber-100 p-5 flex flex-col gap-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700">Organism</h3>
+      <Section title="Organism">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Pollinator Group" required>
             <Select value={form.pollinator_group} onValueChange={(v) => set('pollinator_group', v)}>
@@ -274,18 +267,10 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Genus">
-            <Input
-              value={form.genus}
-              onChange={(e) => set('genus', e.target.value)}
-              placeholder="e.g. Bombus"
-            />
+            <Input value={form.genus} onChange={(e) => set('genus', e.target.value)} placeholder="e.g. Bombus" />
           </FormField>
           <FormField label="Species">
-            <Input
-              value={form.species}
-              onChange={(e) => set('species', e.target.value)}
-              placeholder="e.g. terrestris"
-            />
+            <Input value={form.species} onChange={(e) => set('species', e.target.value)} placeholder="e.g. terrestris" />
           </FormField>
         </div>
         <FormField label="Modifier">
@@ -302,28 +287,19 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
           </Select>
         </FormField>
         <FormField label="Species Name">
-          <div className="flex items-center h-10 px-3 rounded-lg border border-gray-200 bg-gray-50 text-sm italic text-gray-600">
-            {speciesName || <span className="not-italic text-gray-300">Derived from Genus + Species</span>}
+          <div className="flex items-center h-10 px-3 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm italic text-gray-700 dark:text-zinc-300">
+            {speciesName || <span className="not-italic text-gray-300 dark:text-zinc-600">Derived from Genus + Species</span>}
           </div>
         </FormField>
-      </div>
+      </Section>
 
-      {/* Section: Record */}
-      <div className="bg-white rounded-2xl border border-amber-100 p-5 flex flex-col gap-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700">Record Details</h3>
+      <Section title="Record Details">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="ID Code">
-            <Input
-              value={form.id_code}
-              onChange={(e) => set('id_code', e.target.value)}
-              placeholder="e.g. BM001"
-            />
+            <Input value={form.id_code} onChange={(e) => set('id_code', e.target.value)} placeholder="e.g. BM001" />
           </FormField>
           <FormField label="Determiner">
-            <Input
-              value={form.determiner}
-              onChange={(e) => set('determiner', e.target.value)}
-            />
+            <Input value={form.determiner} onChange={(e) => set('determiner', e.target.value)} />
           </FormField>
         </div>
         <FormField label="Comments">
@@ -334,18 +310,12 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
             rows={3}
           />
         </FormField>
-      </div>
+      </Section>
 
-      {/* Section: Image */}
-      <div className="bg-white rounded-2xl border border-amber-100 p-5 flex flex-col gap-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700">Photo (optional)</h3>
+      <Section title="Photo (optional)">
         {imagePreview ? (
           <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Specimen"
-              className="w-full max-h-64 object-cover rounded-xl"
-            />
+            <img src={imagePreview} alt="Specimen" className="w-full max-h-64 object-cover rounded-xl" />
             <button
               type="button"
               onClick={clearImage}
@@ -386,19 +356,13 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
             </Button>
           </div>
         )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="hidden"
-        />
-      </div>
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+      </Section>
 
       <Button
         type="submit"
         disabled={saving}
-        className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-5 rounded-xl"
+        className="w-full bg-gray-900 hover:bg-gray-700 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-semibold py-5 rounded-xl"
       >
         {saving ? (
           <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
