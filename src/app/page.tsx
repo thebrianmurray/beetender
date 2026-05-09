@@ -1,3 +1,4 @@
+// Bee Tender v1.0
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/layout/AppShell'
 import Link from 'next/link'
