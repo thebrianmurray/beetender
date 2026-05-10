@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const headerRow = new TableRow({
     tableHeader: true,
     children: [
-      'Date', 'Site', 'Method', 'Group', 'Species Name', 'Caste', 'Surveyor', 'ID Code',
+      'Date', 'Site', 'Method', 'Group', 'Species Name', 'Caste', 'Sex', 'Surveyor', 'ID Code',
     ].map(
       (text) =>
         new TableCell({
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
           s.pollinator_group,
           s.species_name,
           s.caste,
+          s.sex,
           s.surveyor_initials,
           s.id_code,
         ].map(

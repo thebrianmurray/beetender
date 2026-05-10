@@ -27,6 +27,7 @@ const COLS = [
   { key: 'pollinator_group' as keyof Survey, label: 'Group', flex: 1.3 },
   { key: 'species_name' as keyof Survey, label: 'Species', flex: 2, italic: true },
   { key: 'caste' as keyof Survey, label: 'Caste', flex: 1 },
+  { key: 'sex' as keyof Survey, label: 'Sex', flex: 0.8 },
   { key: 'surveyor_initials' as keyof Survey, label: 'Surv.', flex: 0.7 },
   { key: 'id_code' as keyof Survey, label: 'ID', flex: 0.8 },
 ]

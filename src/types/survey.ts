@@ -3,6 +3,7 @@ export type BowlColour = 'Yellow' | 'White' | 'Blue' | ''
 export type PollinatorGroup = 'Hoverfly' | 'Bumblebee' | 'Solitary Bee' | 'Butterfly'
 export type Caste = 'Not Applicable' | 'Worker' | 'Male' | 'Queen' | ''
 export type Modifier = 'sensu lato (s.l.)' | 'sensu stricto (s. str.)' | 'confer (cf.)' | ''
+export type Sex = 'Male' | 'Female' | 'Unknown' | ''
 
 export interface Survey {
   id: string
@@ -15,6 +16,7 @@ export interface Survey {
   bowl_colour: BowlColour
   pollinator_group: PollinatorGroup
   caste: Caste
+  sex: Sex
   genus: string
   species: string
   modifier: Modifier

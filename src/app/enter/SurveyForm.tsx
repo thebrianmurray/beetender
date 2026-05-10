@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { deriveBowlColour, deriveMonth, deriveSpeciesName, displayToIso } from '@/lib/survey-utils'
-import { SurveyMethod, PollinatorGroup, Caste, Modifier, BowlColour } from '@/types/survey'
+import { SurveyMethod, PollinatorGroup, Caste, Modifier, BowlColour, Sex } from '@/types/survey'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,7 @@ const EMPTY_FORM = {
   station_transect_section: '',
   pollinator_group: '' as PollinatorGroup | '',
   caste: '' as Caste | '',
+  sex: '' as Sex | '',
   genus: '',
   species: '',
   modifier: '' as Modifier | '',
@@ -140,6 +141,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
       bowl_colour: bowlColour as BowlColour,
       pollinator_group: form.pollinator_group as PollinatorGroup,
       caste: (form.caste || '') as Caste,
+      sex: (form.sex || '') as Sex,
       genus: form.genus,
       species: form.species,
       modifier: (form.modifier || '') as Modifier,
@@ -264,6 +266,21 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
               </SelectContent>
             </Select>
           </FormField>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Sex">
+            <Select value={form.sex} onValueChange={(v) => set('sex', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Optional" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Unknown">Unknown</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+          <div />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Genus">

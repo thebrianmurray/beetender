@@ -18,6 +18,7 @@ const COLUMNS: { key: keyof Survey; label: string }[] = [
   { key: 'bowl_colour', label: 'Bowl Colour' },
   { key: 'pollinator_group', label: 'Pollinator Group' },
   { key: 'caste', label: 'Caste' },
+  { key: 'sex', label: 'Sex' },
   { key: 'genus', label: 'Genus' },
   { key: 'species', label: 'Species' },
   { key: 'modifier', label: 'Modifier' },
