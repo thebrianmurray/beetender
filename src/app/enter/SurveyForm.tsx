@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { deriveBowlColour, deriveMonth, deriveSpeciesName, displayToIso } from '@/lib/survey-utils'
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { Camera, Upload, X, Loader2 } from 'lucide-react'
+import { Camera, Upload, X, Loader2, CopyPlus } from 'lucide-react'
 
 const EMPTY_FORM = {
   site_id: '',
@@ -77,7 +77,8 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initialData })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url ?? null)
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving] = useState<null | 'save' | 'duplicate'>(null)
+  const organismRef = useRef<HTMLDivElement>(null)
 
   const month = deriveMonth(form.date)
   const bowlColour = deriveBowlColour(form.station_transect_section, form.survey_method as SurveyMethod)
@@ -100,14 +101,16 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  // Fields that belong to the site/survey section — kept when duplicating
+  const SITE_FIELDS = ['site_id', 'surveyor_initials', 'date', 'survey_method', 'station_transect_section'] as const
+
+  async function save(mode: 'save' | 'duplicate') {
     if (!form.site_id || !form.date || !form.survey_method || !form.pollinator_group) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    setSaving(true)
+    setSaving(mode)
     const supabase = createClient()
 
     let image_url: string | null = initialData?.image_url ?? null
@@ -121,7 +124,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
 
       if (uploadError) {
         toast.error('Image upload failed: ' + uploadError.message)
-        setSaving(false)
+        setSaving(null)
         return
       }
 
@@ -159,21 +162,41 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
       ;({ error } = await supabase.from('surveys').insert(payload))
     }
 
-    setSaving(false)
+    setSaving(null)
 
     if (error) {
       toast.error('Save failed: ' + error.message)
       return
     }
 
-    toast.success(initialData?.id ? 'Record updated' : 'Observation saved')
-    if (!initialData?.id) {
+    if (initialData?.id) {
+      toast.success('Record updated')
+      router.push('/view')
+      return
+    }
+
+    if (mode === 'save') {
+      toast.success('Observation saved')
       setForm({ ...EMPTY_FORM })
       setImageFile(null)
       setImagePreview(null)
     } else {
-      router.push('/view')
+      // Duplicate: keep site fields, clear organism fields
+      toast.success('Saved — site details kept for next record')
+      setForm((prev) => ({
+        ...EMPTY_FORM,
+        ...Object.fromEntries(SITE_FIELDS.map((k) => [k, prev[k]])),
+      }))
+      setImageFile(null)
+      setImagePreview(null)
+      // Scroll to organism section
+      setTimeout(() => organismRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    save('save')
   }
 
   return (
@@ -238,6 +261,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
         )}
       </Section>
 
+      <div ref={organismRef}>
       <Section title="Organism">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Pollinator Group" required>
@@ -309,6 +333,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
           </div>
         </FormField>
       </Section>
+      </div>
 
       <Section title="Record Details">
         <div className="grid grid-cols-2 gap-4">
@@ -376,17 +401,38 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
       </Section>
 
-      <Button
-        type="submit"
-        disabled={saving}
-        className="w-full bg-gray-900 hover:bg-gray-700 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-semibold py-5 rounded-xl"
-      >
-        {saving ? (
-          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
-        ) : (
-          initialData?.id ? 'Update Record' : 'Save Observation'
-        )}
-      </Button>
+      {initialData?.id ? (
+        // Edit mode — single update button
+        <Button
+          type="submit"
+          disabled={!!saving}
+          className="w-full bg-gray-900 hover:bg-gray-700 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-semibold py-5 rounded-xl"
+        >
+          {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Update Record'}
+        </Button>
+      ) : (
+        // New record — save or save + duplicate
+        <div className="flex gap-3">
+          <Button
+            type="submit"
+            disabled={!!saving}
+            className="flex-1 bg-gray-900 hover:bg-gray-700 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-semibold py-5 rounded-xl"
+          >
+            {saving === 'save' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Save Observation'}
+          </Button>
+          <Button
+            type="button"
+            disabled={!!saving}
+            onClick={() => save('duplicate')}
+            variant="outline"
+            className="flex-1 font-semibold py-5 rounded-xl border-gray-300 dark:border-zinc-700"
+          >
+            {saving === 'duplicate'
+              ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+              : <><CopyPlus className="w-4 h-4 mr-2" /> Save + New Duplicate</>}
+          </Button>
+        </div>
+      )}
     </form>
   )
 }
