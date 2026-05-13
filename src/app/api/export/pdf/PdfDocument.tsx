@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
 })
 
 const COLS = [
+  { key: 'label_number' as keyof Survey, label: '#', flex: 0.5 },
   { key: 'date' as keyof Survey, label: 'Date', flex: 1.2, transform: (v: string) => isoToDisplay(v) },
   { key: 'site_id' as keyof Survey, label: 'Site', flex: 1 },
   { key: 'survey_method' as keyof Survey, label: 'Method', flex: 1.2 },

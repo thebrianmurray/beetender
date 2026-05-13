@@ -71,6 +71,7 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 dark:border-zinc-800">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500 w-16">#</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Date</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Site</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">Method</th>
@@ -84,7 +85,7 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
             <tbody className="divide-y divide-gray-100 dark:divide-zinc-800/50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
                     {search ? 'No records match your search' : 'No observations recorded yet'}
                   </td>
                 </tr>
@@ -94,6 +95,11 @@ export function SurveyTable({ surveys: initialSurveys }: { surveys: Survey[] }) 
                     key={survey.id}
                     className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
                   >
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center justify-center w-8 h-6 rounded bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold tabular-nums">
+                        {survey.label_number}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-zinc-400 text-xs">
                       {isoToDisplay(survey.date)}
                     </td>

@@ -7,6 +7,7 @@ export type Sex = 'Male' | 'Female' | 'Unknown' | ''
 
 export interface Survey {
   id: string
+  label_number: number
   site_id: string
   surveyor_initials: string
   date: string // ISO date string yyyy-mm-dd
@@ -30,5 +31,5 @@ export interface Survey {
   updated_at: string
 }
 
-export type SurveyInsert = Omit<Survey, 'id' | 'created_at' | 'updated_at' | 'user_id'>
+export type SurveyInsert = Omit<Survey, 'id' | 'label_number' | 'created_at' | 'updated_at' | 'user_id'>
 export type SurveyUpdate = Partial<SurveyInsert>

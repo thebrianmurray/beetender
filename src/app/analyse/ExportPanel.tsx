@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
 
 const COLUMNS: { key: keyof Survey; label: string }[] = [
+  { key: 'label_number', label: 'Label No.' },
   { key: 'site_id', label: 'Site ID' },
   { key: 'surveyor_initials', label: 'Surveyor' },
   { key: 'date', label: 'Date' },
