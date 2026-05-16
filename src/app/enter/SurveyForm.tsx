@@ -80,6 +80,14 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
   const [saving, setSaving] = useState<null | 'save' | 'duplicate'>(null)
   const organismRef = useRef<HTMLDivElement>(null)
 
+  // Date display state — user types dd/mm/yy, we store ISO internally
+  const [dateDisplay, setDateDisplay] = useState<string>(() => {
+    if (!initialData?.date) return ''
+    // Convert ISO yyyy-MM-dd → dd/mm/yyyy for display
+    const [y, m, d] = (initialData.date as string).split('-')
+    return y && m && d ? `${d}/${m}/${y}` : ''
+  })
+
   const month = deriveMonth(form.date)
   const bowlColour = deriveBowlColour(form.station_transect_section, form.survey_method as SurveyMethod)
   const speciesName = deriveSpeciesName(form.genus, form.species, form.modifier as Modifier)
@@ -99,6 +107,33 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
     setImageFile(null)
     setImagePreview(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  // Auto-format date as user types: insert slashes after dd and mm
+  function handleDateChange(raw: string) {
+    const digits = raw.replace(/\D/g, '').slice(0, 8)
+    let formatted = digits
+    if (digits.length > 4) formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+    else if (digits.length > 2) formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`
+    setDateDisplay(formatted)
+    // Try to resolve ISO whenever we have enough digits
+    parseDateDisplay(formatted)
+  }
+
+  function parseDateDisplay(display: string) {
+    const parts = display.split('/')
+    if (parts.length !== 3) { set('date', ''); return }
+    const [d, m, y] = parts
+    if (!d || !m || !y) { set('date', ''); return }
+    // Expand 2-digit year
+    const fullYear = y.length === 2 ? `20${y}` : y
+    if (fullYear.length !== 4) { set('date', ''); return }
+    const iso = `${fullYear}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+    const date = new Date(iso)
+    if (isNaN(date.getTime())) { set('date', ''); return }
+    set('date', iso)
+    // Show full 4-digit year on blur
+    setDateDisplay(`${d.padStart(2, '0')}/${m.padStart(2, '0')}/${fullYear}`)
   }
 
   // Fields that belong to the site/survey section — kept when duplicating
@@ -156,10 +191,18 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
     }
 
     let error
+    let labelNumber: number | null = null
+
     if (initialData?.id) {
       ;({ error } = await supabase.from('surveys').update(payload).eq('id', initialData.id))
     } else {
-      ;({ error } = await supabase.from('surveys').insert(payload))
+      const { data: inserted, error: insertError } = await supabase
+        .from('surveys')
+        .insert(payload)
+        .select('label_number')
+        .single()
+      error = insertError
+      labelNumber = inserted?.label_number ?? null
     }
 
     setSaving(null)
@@ -175,21 +218,23 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
       return
     }
 
+    const labelMsg = labelNumber !== null ? ` — Label #${labelNumber}` : ''
+
     if (mode === 'save') {
-      toast.success('Observation saved')
+      toast.success(`Saved${labelMsg}`, { duration: 6000 })
       setForm({ ...EMPTY_FORM })
+      setDateDisplay('')
       setImageFile(null)
       setImagePreview(null)
     } else {
-      // Duplicate: keep site fields, clear organism fields
-      toast.success('Saved — site details kept for next record')
+      toast.success(`Saved${labelMsg} — site details kept`, { duration: 6000 })
       setForm((prev) => ({
         ...EMPTY_FORM,
         ...Object.fromEntries(SITE_FIELDS.map((k) => [k, prev[k]])),
       }))
+      // Keep date display in sync
       setImageFile(null)
       setImagePreview(null)
-      // Scroll to organism section
       setTimeout(() => organismRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     }
   }
@@ -220,11 +265,15 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Date" required>
+          <FormField label="Date" required hint="dd/mm/yy">
             <Input
-              type="date"
-              value={form.date}
-              onChange={(e) => set('date', e.target.value)}
+              type="text"
+              inputMode="numeric"
+              value={dateDisplay}
+              onChange={(e) => handleDateChange(e.target.value)}
+              onBlur={() => parseDateDisplay(dateDisplay)}
+              placeholder="dd/mm/yy"
+              maxLength={10}
             />
           </FormField>
           <FormField label="Month">
