@@ -9,7 +9,9 @@ import { Shield, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 
-export function SettingsPanel({ isAdmin, userEmail }: { isAdmin: boolean; userEmail: string }) {
+interface Build { sha: string; message: string; deployedAt: string | null }
+
+export function SettingsPanel({ isAdmin, userEmail, build }: { isAdmin: boolean; userEmail: string; build: Build }) {
   const [defaultDeterminer, setDefaultDeterminer] = useState('Brian Murray')
 
   function save() {
@@ -64,6 +66,16 @@ export function SettingsPanel({ isAdmin, userEmail }: { isAdmin: boolean; userEm
         <p className="text-xs text-gray-400 dark:text-zinc-500">
           More settings (authorised users, custom drop-down values, site lists) will be added in a future update.
         </p>
+        <Separator />
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-gray-400 dark:text-zinc-500 font-mono">
+            Build <span className="text-gray-700 dark:text-zinc-300 font-semibold">{build.sha}</span>
+            {build.deployedAt && <span className="ml-2 font-sans font-normal">· {build.deployedAt}</span>}
+          </p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 truncate" title={build.message}>
+            {build.message}
+          </p>
+        </div>
       </div>
     </div>
   )
