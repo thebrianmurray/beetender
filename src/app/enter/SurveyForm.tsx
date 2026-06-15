@@ -178,11 +178,11 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
       station_transect_section: form.station_transect_section,
       bowl_colour: bowlColour as BowlColour,
       pollinator_group: form.pollinator_group as PollinatorGroup,
-      caste: (form.caste || '') as Caste,
+      caste: (form.caste || 'Not Applicable') as Caste,
       sex: (form.sex || '') as Sex,
       genus: form.genus,
       species: form.species,
-      modifier: (form.modifier || '') as Modifier,
+      modifier: (form.modifier || 'Not Applicable') as Modifier,
       species_name: speciesName,
       id_code: form.id_code,
       determiner: form.determiner,
@@ -369,7 +369,7 @@ export function SurveyForm({ initialData }: { initialData?: typeof EMPTY_FORM & 
               <SelectValue placeholder="None" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="Not Applicable">Not Applicable</SelectItem>
               <SelectItem value="sensu lato (s.l.)">sensu lato (s.l.)</SelectItem>
               <SelectItem value="sensu stricto (s. str.)">sensu stricto (s. str.)</SelectItem>
               <SelectItem value="confer (cf.)">confer (cf.)</SelectItem>

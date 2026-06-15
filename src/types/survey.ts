@@ -2,7 +2,7 @@ export type SurveyMethod = 'Pan Trap' | 'Transect'
 export type BowlColour = 'Yellow' | 'White' | 'Blue' | ''
 export type PollinatorGroup = 'Hoverfly' | 'Bumblebee' | 'Solitary Bee' | 'Butterfly'
 export type Caste = 'Not Applicable' | 'Worker' | 'Male' | 'Queen' | ''
-export type Modifier = 'sensu lato (s.l.)' | 'sensu stricto (s. str.)' | 'confer (cf.)' | ''
+export type Modifier = 'Not Applicable' | 'sensu lato (s.l.)' | 'sensu stricto (s. str.)' | 'confer (cf.)' | ''
 export type Sex = 'Male' | 'Female' | 'Unknown' | ''
 
 export interface Survey {
