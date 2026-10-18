@@ -66,7 +66,8 @@ export function ExportPanel({ surveys }: { surveys: Survey[] }) {
 
   function exportExcel() {
     setExporting('excel')
-    const rows = toRows(surveys)
+    const sorted = [...surveys].sort((a, b) => (a.label_number ?? 0) - (b.label_number ?? 0))
+    const rows = toRows(sorted)
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Surveys')
