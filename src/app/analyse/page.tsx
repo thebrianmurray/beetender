@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { fetchAllSurveys } from '@/lib/fetch-all-surveys'
 import { AppShell } from '@/components/layout/AppShell'
 import { ExportPanel } from './ExportPanel'
 import Link from 'next/link'
@@ -8,14 +9,10 @@ export default async function AnalysePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: surveys } = await supabase
-    .from('surveys')
-    .select('*')
-    .order('date', { ascending: false })
-    .limit(10000)
+  const surveys = await fetchAllSurveys(supabase)
 
-  const total = surveys?.length ?? 0
-  const uniqueSpecies = new Set(surveys?.map(s => s.species_name).filter(Boolean)).size
+  const total = surveys.length
+  const uniqueSpecies = new Set(surveys.map(s => s.species_name).filter(Boolean)).size
 
   return (
     <AppShell userEmail={user?.email}>
@@ -52,7 +49,7 @@ export default async function AnalysePage() {
         {/* Export panel */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500">Export</h2>
-          <ExportPanel surveys={surveys ?? []} />
+          <ExportPanel surveys={surveys} />
         </section>
       </div>
     </AppShell>
