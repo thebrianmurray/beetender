@@ -12,6 +12,7 @@ export default async function AnalysePage() {
     .from('surveys')
     .select('*')
     .order('date', { ascending: false })
+    .limit(10000)
 
   const total = surveys?.length ?? 0
   const uniqueSpecies = new Set(surveys?.map(s => s.species_name).filter(Boolean)).size

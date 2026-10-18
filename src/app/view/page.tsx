@@ -11,6 +11,7 @@ export default async function ViewPage() {
     .select('*')
     .order('date', { ascending: false })
     .order('created_at', { ascending: false })
+    .limit(10000)
 
   return (
     <AppShell userEmail={user?.email}>

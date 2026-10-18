@@ -10,6 +10,7 @@ export default async function OverviewPage() {
     .from('surveys')
     .select('*')
     .order('date', { ascending: false })
+    .limit(10000)
 
   return (
     <AppShell userEmail={user?.email}>
